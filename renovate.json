@@ -1,0 +1,13 @@
+{
+  "extends": ["github>cujarrett/homelab//.github/renovate-shared"],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Tool versions pinned in the Makefile and .custom-gcl.yml, each marked with a renovate comment",
+      "managerFilePatterns": ["/^Makefile$/", "/^\\.custom-gcl\\.yml$/"],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\n[^\\n]*?(?<currentValue>v\\d+\\.\\d+\\.\\d+)"
+      ]
+    }
+  ]
+}

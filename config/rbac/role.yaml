@@ -1,0 +1,32 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: manager-role
+rules:
+- apiGroups:
+  - temporal.local.lab
+  resources:
+  - temporalnamespaces
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - temporal.local.lab
+  resources:
+  - temporalnamespaces/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - temporal.local.lab
+  resources:
+  - temporalnamespaces/status
+  verbs:
+  - get
+  - patch
+  - update

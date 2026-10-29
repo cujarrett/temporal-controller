@@ -1,0 +1,7 @@
+apiVersion: temporal.local.lab/v1alpha1
+kind: TemporalNamespace
+metadata:
+  name: foo
+spec:
+  retention: 72h
+  description: Workflows for the foo team
