@@ -26,6 +26,19 @@ spec:
 
 The `Ready` condition turns `True` once the namespace exists in Temporal with this spec.
 
+## Behaviour
+
+- **Create:** registers the namespace and records the object that owns it.
+- **Drift:** every 5 minutes, sets retention and description back to the spec.
+- **Conflict:** a namespace owned by another object, or made outside the controller, is left alone. `Ready` turns `False` with reason `Conflict`.
+- **Delete:** deleting the object deletes the namespace, but only if this object owns it.
+
+## Flags
+
+| Flag | Default | What it sets |
+|---|---|---|
+| `--temporal-address` | `localhost:7233` | The Temporal frontend, as `host:port` |
+
 ## Development
 
 | Command | What it does |
@@ -36,3 +49,5 @@ The `Ready` condition turns `True` once the namespace exists in Temporal with th
 | `make build` | Builds the manager binary into `bin/` |
 | `make install` | Applies the CRD to the current kubeconfig |
 | `make run` | Runs the controller locally against the current kubeconfig |
+
+`make test` uses a fake Temporal. To also run against a real server, start one with `temporal server start-dev` and set `TEMPORAL_ADDRESS=localhost:7233`.

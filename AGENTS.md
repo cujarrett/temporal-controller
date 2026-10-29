@@ -18,6 +18,8 @@
 
 Fast loop without envtest binaries: `go test -race -skip TestControllers ./...`.
 
+Tests against a real Temporal skip unless `TEMPORAL_ADDRESS` is set. Run them after any change to `internal/temporal/` or the reconcile flow, with `temporal server start-dev` running. The fake cannot show Temporal's cache delays.
+
 ## Writing
 
 Plain language in comments, docs and commit messages.

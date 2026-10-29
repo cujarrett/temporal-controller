@@ -20,6 +20,7 @@ import (
 
 	temporalv1alpha1 "github.com/cujarrett/temporal-controller/api/v1alpha1"
 	"github.com/cujarrett/temporal-controller/internal/controller"
+	"github.com/cujarrett/temporal-controller/internal/temporal"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -43,12 +44,14 @@ func main() {
 	var webhookPort int
 	var enableLeaderElection bool
 	var probeAddr string
+	var temporalAddress string
 	var secureMetrics bool
 	var enableHTTP2 bool
 	var tlsOpts []func(*tls.Config)
 	flag.StringVar(&metricsAddr, "metrics-bind-address", "0", "The address the metrics endpoint binds to. "+
 		"Use :8443 for HTTPS or :8080 for HTTP, or leave as 0 to disable the metrics service.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
+	flag.StringVar(&temporalAddress, "temporal-address", "localhost:7233", "The host:port of the Temporal frontend.")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
@@ -135,9 +138,18 @@ func main() {
 		os.Exit(1)
 	}
 
+	temporalClient, err := temporal.New(temporalAddress)
+	if err != nil {
+		setupLog.Error(err, "Failed to create Temporal client")
+		os.Exit(1)
+	}
+	defer temporalClient.Close()
+
 	if err := (&controller.TemporalNamespaceReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
+		Client:   mgr.GetClient(),
+		Scheme:   mgr.GetScheme(),
+		Temporal: temporalClient,
+		Recorder: mgr.GetEventRecorder("temporal-controller"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "Failed to create controller", "controller", "temporalnamespace")
 		os.Exit(1)
