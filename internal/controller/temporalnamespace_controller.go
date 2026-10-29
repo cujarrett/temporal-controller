@@ -42,7 +42,7 @@ type TemporalNamespaceReconciler struct {
 	Recorder events.EventRecorder
 }
 
-// +kubebuilder:rbac:groups=temporal.local.lab,resources=temporalnamespaces,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=temporal.local.lab,resources=temporalnamespaces,verbs=get;list;watch;update;patch
 // +kubebuilder:rbac:groups=temporal.local.lab,resources=temporalnamespaces/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=temporal.local.lab,resources=temporalnamespaces/finalizers,verbs=update
 // +kubebuilder:rbac:groups=events.k8s.io,resources=events,verbs=create;patch
