@@ -7,7 +7,7 @@ require (
 	github.com/onsi/gomega v1.44.0
 	go.temporal.io/api v1.64.0
 	go.temporal.io/sdk v1.50.0
-	google.golang.org/protobuf v1.36.12-0.20260120151049-f2248ac996af
+	google.golang.org/protobuf v1.36.12
 	k8s.io/api v0.37.2
 	k8s.io/apimachinery v0.37.2
 	k8s.io/client-go v0.37.2
