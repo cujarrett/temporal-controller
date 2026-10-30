@@ -33,7 +33,7 @@ Temporal runs workflows that survive crashes, restarts and long waits. Offering 
 - **Connection details** handed to the team's apps.
 - **Worker rollouts** that don't break running workflows.
 
-This controller is the first piece, as a Kubernetes resource. A platform layer such as Crossplane puts it together with the others, so a team asks for "workflows" in one YAML file and gets all of them.
+This controller is the first piece, as a Kubernetes resource. A platform layer such as Crossplane puts it together with the others, so a team asks for "workflows" in one YAML file and gets all of them. [My implementation](https://github.com/cujarrett/homelab/tree/main/platform/workflow)
 
 What it adds to that namespace:
 
