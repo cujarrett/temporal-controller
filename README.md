@@ -24,6 +24,23 @@ spec:
 
 The Temporal namespace takes the object's name. `Ready` turns `True` once Temporal matches the spec.
 
+## Why
+
+Temporal runs workflows that survive crashes, restarts and long waits. Offering it to teams without tickets takes several pieces:
+
+- **A namespace per team**, created, kept right and cleaned up.
+- **Access** to that namespace and no other.
+- **Connection details** handed to the team's apps.
+- **Worker rollouts** that don't break running workflows.
+
+This controller is the first piece, as a Kubernetes resource. A platform layer such as Crossplane puts it together with the others, so a team asks for "workflows" in one YAML file and gets all of them.
+
+What it adds to that namespace:
+
+- **Owned:** the namespace records which object created it, so one team cannot take or delete another team's.
+- **Kept right:** changes made by hand in Temporal are set back to the YAML.
+- **Cleaned up:** deleting the YAML deletes the namespace.
+
 ## What it does
 
 - **Create:** registers the namespace and records which object owns it.
