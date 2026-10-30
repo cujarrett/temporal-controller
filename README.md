@@ -1,14 +1,16 @@
-# temporal-controller
+<p align="center">
+  <img src=".github/logo.png" alt="The Go gopher hugging Ziggy, Temporal's tardigrade" width="200">
+</p>
 
-Not affiliated with Temporal Technologies.
+<h1 align="center">temporal-controller</h1>
 
-A Kubernetes controller that manages Temporal resources as custom resources. You declare a resource in YAML, and the controller makes Temporal match it.
+<p align="center">
+  Temporal namespaces as Kubernetes resources. Declare one in YAML, and the controller makes Temporal match it.
+</p>
 
-## Resources
-
-| Kind | What it manages |
-|---|---|
-| `TemporalNamespace` | A namespace on a self-hosted Temporal server |
+<p align="center">
+  <a href="https://github.com/cujarrett/temporal-controller/actions/workflows/ci.yml"><img src="https://github.com/cujarrett/temporal-controller/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+</p>
 
 ```yaml
 apiVersion: temporal.local.lab/v1alpha1
@@ -16,38 +18,40 @@ kind: TemporalNamespace
 metadata:
   name: foo
 spec:
-  retention: 72h
-  description: Workflows for the foo team
+  retention: 72h                 # required, history kept for closed workflows
+  description: Workflows for foo # optional, shown in the Temporal UI
 ```
 
-- `metadata.name`: the Temporal namespace name.
-- `retention`: how long Temporal keeps the history of closed workflows. Required.
-- `description`: shown in the Temporal UI.
+The Temporal namespace takes the object's name. `Ready` turns `True` once Temporal matches the spec.
 
-The `Ready` condition turns `True` once the namespace exists in Temporal with this spec.
+## What it does
 
-## Behaviour
+- **Create:** registers the namespace and records which object owns it.
+- **Drift:** every 5 minutes, puts retention and description back to the spec.
+- **Conflict:** leaves a namespace another object owns, or one made outside the controller, alone. `Ready` turns `False` with reason `Conflict`.
+- **Delete:** removes the namespace with the object, but only if that object owns it.
 
-- **Create:** registers the namespace and records the object that owns it.
-- **Drift:** every 5 minutes, sets retention and description back to the spec.
-- **Conflict:** a namespace owned by another object, or made outside the controller, is left alone. `Ready` turns `False` with reason `Conflict`.
-- **Delete:** deleting the object deletes the namespace, but only if this object owns it.
+## Run it
 
-## Flags
-
-| Flag | Default | What it sets |
+| Flag | Default | Sets |
 |---|---|---|
 | `--temporal-address` | `localhost:7233` | The Temporal frontend, as `host:port` |
 
-## Development
+```bash
+make install   # apply the CRD to your current cluster
+make run       # run the controller locally against it
+```
 
-| Command | What it does |
-|---|---|
-| `make generate manifests` | Regenerates deepcopy, CRD and RBAC after editing `api/` |
-| `make test` | Runs unit tests and the envtest suite |
-| `make lint` | Runs golangci-lint |
-| `make build` | Builds the manager binary into `bin/` |
-| `make install` | Applies the CRD to the current kubeconfig |
-| `make run` | Runs the controller locally against the current kubeconfig |
+## Develop
 
-`make test` uses a fake Temporal. To also run against a real server, start one with `temporal server start-dev` and set `TEMPORAL_ADDRESS=localhost:7233`.
+```bash
+make generate manifests   # after editing api/
+make test                 # unit and envtest suites, with a fake Temporal
+make lint
+```
+
+To also test against a real server, run `temporal server start-dev` and set `TEMPORAL_ADDRESS=localhost:7233`.
+
+---
+
+<sub>Go gopher by Renée French, CC BY 4.0. Ziggy is Temporal's mascot.</sub>
