@@ -15,7 +15,7 @@ func TestAgainstServer(t *testing.T) {
 	if address == "" {
 		t.Skip("TEMPORAL_ADDRESS not set")
 	}
-	c, err := New(address)
+	c, err := New(address, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

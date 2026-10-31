@@ -1,9 +1,11 @@
 package main
 
 import (
+	"context"
 	"crypto/tls"
 	"flag"
 	"os"
+	"time"
 
 	// Lets the manager use kubeconfigs that sign in through OIDC or a cloud provider.
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
@@ -45,6 +47,7 @@ func main() {
 	var enableLeaderElection bool
 	var probeAddr string
 	var temporalAddress string
+	var entraTenantID, entraClientID, temporalTokenScope, spiffeSocket string
 	var secureMetrics bool
 	var enableHTTP2 bool
 	var tlsOpts []func(*tls.Config)
@@ -52,6 +55,13 @@ func main() {
 		"Use :8443 for HTTPS or :8080 for HTTP, or leave as 0 to disable the metrics service.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
 	flag.StringVar(&temporalAddress, "temporal-address", "localhost:7233", "The host:port of the Temporal frontend.")
+	flag.StringVar(&entraTenantID, "entra-tenant-id", "",
+		"Entra tenant to get Temporal tokens from. Empty sends no token.")
+	flag.StringVar(&entraClientID, "entra-client-id", "", "The controller's Entra app client ID.")
+	flag.StringVar(&temporalTokenScope, "temporal-token-scope", "",
+		"The Entra scope for Temporal, such as api://<tenant>/platform-temporal/.default.")
+	flag.StringVar(&spiffeSocket, "spiffe-socket", "/var/run/secrets/spiffe.io/api.sock",
+		"The SPIRE agent's Workload API socket.")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
@@ -138,7 +148,28 @@ func main() {
 		os.Exit(1)
 	}
 
-	temporalClient, err := temporal.New(temporalAddress)
+	// A nil provider sends no token, so local runs and tests need no SPIRE or Entra.
+	var headers temporal.Headers
+	if entraTenantID != "" && entraClientID != "" && temporalTokenScope != "" {
+		token := &temporal.EntraToken{
+			TenantID:  entraTenantID,
+			ClientID:  entraClientID,
+			Scope:     temporalTokenScope,
+			FetchSVID: temporal.SPIRESVID(spiffeSocket),
+		}
+		headers = token
+		// One fetch at startup proves the SVID to Entra trade works. Failure is logged, not fatal,
+		// because each Temporal call fetches again and the SPIRE agent can start after this pod.
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		if _, err := token.Token(ctx); err != nil {
+			setupLog.Error(err, "Could not fetch an Entra token for Temporal yet")
+		} else {
+			setupLog.Info("Fetched an Entra token for Temporal")
+		}
+		cancel()
+	}
+
+	temporalClient, err := temporal.New(temporalAddress, headers)
 	if err != nil {
 		setupLog.Error(err, "Failed to create Temporal client")
 		os.Exit(1)

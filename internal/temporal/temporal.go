@@ -32,10 +32,16 @@ type Client struct {
 	sdk client.Client
 }
 
+// Headers adds gRPC headers to every Temporal call. EntraToken is the real one.
+type Headers interface {
+	GetHeaders(ctx context.Context) (map[string]string, error)
+}
+
 // New returns a client that connects on first use.
 // The manager can then start while Temporal is down, and reconciles retry until it is up.
-func New(address string) (*Client, error) {
-	sdk, err := client.NewLazyClient(client.Options{HostPort: address})
+// headers adds a bearer token to every call. Nil sends none.
+func New(address string, headers Headers) (*Client, error) {
+	sdk, err := client.NewLazyClient(client.Options{HostPort: address, HeadersProvider: headers})
 	if err != nil {
 		return nil, err
 	}

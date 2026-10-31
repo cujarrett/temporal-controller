@@ -28,7 +28,7 @@ var _ = Describe("TemporalNamespace controller against Temporal", func() {
 			Skip("TEMPORAL_ADDRESS not set")
 		}
 
-		tc, err := temporal.New(address)
+		tc, err := temporal.New(address, nil)
 		Expect(err).NotTo(HaveOccurred())
 		DeferCleanup(tc.Close)
 

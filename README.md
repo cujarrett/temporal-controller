@@ -1,4 +1,4 @@
-I'm<p align="center">
+<p align="center">
   <img src=".github/logo.png" alt="The Go gopher hugging Ziggy, Temporal's tardigrade" width="200">
 </p>
 
@@ -53,6 +53,20 @@ What it adds to that namespace:
 | Flag | Default | Sets |
 |---|---|---|
 | `--temporal-address` | `localhost:7233` | The Temporal frontend, as `host:port` |
+| `--entra-tenant-id` | none | The Entra tenant to get Temporal tokens from |
+| `--entra-client-id` | none | The controller's Entra app client ID |
+| `--temporal-token-scope` | none | The Entra scope for Temporal |
+| `--spiffe-socket` | `/var/run/secrets/spiffe.io/api.sock` | The SPIRE agent's Workload API socket |
+
+## Identity
+
+The controller signs in to Temporal with its SPIFFE identity. It has no client secret. A federated credential on its Entra app trusts the SVID instead, so there is nothing to store, leak or rotate.
+
+1. It fetches a short-lived JWT-SVID from the SPIRE agent.
+2. It sends the SVID to Entra in place of a secret. Entra checks it against SPIRE's published keys and returns an access token.
+3. Every Temporal call carries the token. Temporal reads its roles claim.
+
+With the three Entra flags unset, it sends no token. That suits a local dev server.
 
 ```bash
 make install   # apply the CRD to your current cluster
