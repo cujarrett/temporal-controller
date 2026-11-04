@@ -47,6 +47,27 @@ func SPIRESVID(socket string) func(ctx context.Context) (string, error) {
 	}
 }
 
+// SPIRETrust returns the controller's own trust domain and its CA from the SPIRE agent.
+// Temporal Cloud trusts the CA, so any workload's SVID can be a client certificate there.
+func SPIRETrust(socket string) func(ctx context.Context) (Trust, error) {
+	return func(ctx context.Context) (Trust, error) {
+		x509Ctx, err := workloadapi.FetchX509Context(ctx, workloadapi.WithAddr("unix://"+socket))
+		if err != nil {
+			return Trust{}, fmt.Errorf("fetch SPIRE trust bundle: %w", err)
+		}
+		domain := x509Ctx.DefaultSVID().ID.TrustDomain()
+		bundle, err := x509Ctx.Bundles.GetX509BundleForTrustDomain(domain)
+		if err != nil {
+			return Trust{}, fmt.Errorf("find SPIRE trust bundle: %w", err)
+		}
+		ca, err := bundle.Marshal()
+		if err != nil {
+			return Trust{}, err
+		}
+		return Trust{CA: ca, Domain: domain.Name()}, nil
+	}
+}
+
 // Token returns a cached token, or a fresh one when less than 5 minutes are left.
 func (t *EntraToken) Token(ctx context.Context) (string, error) {
 	t.mu.Lock()

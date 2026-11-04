@@ -25,6 +25,19 @@ type Namespace struct {
 	Retention   time.Duration
 	// Owner is "<kubernetes namespace>/<name>" of the TemporalNamespace that created it.
 	Owner string
+
+	// Public cloud only. The spec sets it.
+	// ClientNamespace is the Kubernetes namespace whose workloads may connect.
+	ClientNamespace string
+
+	// Public cloud only. Describe sets these.
+	// FullName is name.account, what workers use as their namespace.
+	FullName string
+	Endpoint string
+	// Pending means Temporal Cloud is still applying a create, change or delete.
+	Pending bool
+	// ClientCAStale means the accepted client CA is not the current SPIRE trust bundle.
+	ClientCAStale bool
 }
 
 // Client talks to one Temporal frontend.

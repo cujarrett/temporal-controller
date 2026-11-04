@@ -55,7 +55,7 @@ var _ = Describe("TemporalNamespace controller against Temporal", func() {
 		name := fmt.Sprintf("tc-it-%d", time.Now().UnixNano())
 		obj := &temporalv1alpha1.TemporalNamespace{
 			Name:      name,
-			Namespace: "default",
+			Namespace: testNamespace,
 			Spec:      temporalv1alpha1.TemporalNamespaceSpec{Retention: metav1.Duration{Duration: 24 * time.Hour}},
 		}
 		Expect(k8sClient.Create(ctx, obj)).To(Succeed())

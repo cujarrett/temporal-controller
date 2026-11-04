@@ -11,6 +11,7 @@
 - **Before telling the user to commit, run `/security-review`.** Report one line if clean. Spend words only on real findings.
 - **Cheapest rung that works.** Skip the feature, reuse code, standard library, a dependency already installed, one line, then build the minimum.
 - **Never hand-edit generated files.** See [Generated files](#generated-files).
+- **Follow the [Kubernetes API conventions](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md) when changing `api/`.** Prefer an enum to a boolean, so a third value can be added later.
 
 ## Build
 

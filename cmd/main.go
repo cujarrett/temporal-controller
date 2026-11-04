@@ -48,6 +48,7 @@ func main() {
 	var probeAddr string
 	var temporalAddress string
 	var entraTenantID, entraClientID, temporalTokenScope, spiffeSocket string
+	var temporalCloudKeyFile string
 	var secureMetrics bool
 	var enableHTTP2 bool
 	var tlsOpts []func(*tls.Config)
@@ -60,6 +61,8 @@ func main() {
 	flag.StringVar(&entraClientID, "entra-client-id", "", "The controller's Entra app client ID.")
 	flag.StringVar(&temporalTokenScope, "temporal-token-scope", "",
 		"The Entra scope for Temporal, such as api://<tenant>/platform-temporal/.default.")
+	flag.StringVar(&temporalCloudKeyFile, "temporal-cloud-api-key-file", "",
+		"File holding the Temporal Cloud API key. Empty turns public-cloud off.")
 	flag.StringVar(&spiffeSocket, "spiffe-socket", "/var/run/secrets/spiffe.io/api.sock",
 		"The SPIRE agent's Workload API socket.")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
@@ -176,11 +179,24 @@ func main() {
 	}
 	defer temporalClient.Close()
 
+	// Without a key, a public-cloud TemporalNamespace reports Ready=False instead of creating anything.
+	var publicCloud controller.Temporal
+	if temporalCloudKeyFile != "" {
+		cloud, err := temporal.NewCloud(temporalCloudKeyFile, temporal.SPIRETrust(spiffeSocket))
+		if err != nil {
+			setupLog.Error(err, "Failed to create Temporal Cloud client")
+			os.Exit(1)
+		}
+		defer cloud.Close()
+		publicCloud = cloud
+	}
+
 	if err := (&controller.TemporalNamespaceReconciler{
-		Client:   mgr.GetClient(),
-		Scheme:   mgr.GetScheme(),
-		Temporal: temporalClient,
-		Recorder: mgr.GetEventRecorder("temporal-controller"),
+		Client:      mgr.GetClient(),
+		Scheme:      mgr.GetScheme(),
+		Temporal:    temporalClient,
+		PublicCloud: publicCloud,
+		Recorder:    mgr.GetEventRecorder("temporal-controller"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "Failed to create controller", "controller", "temporalnamespace")
 		os.Exit(1)
