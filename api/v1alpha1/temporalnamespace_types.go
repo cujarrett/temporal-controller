@@ -7,15 +7,37 @@ import (
 
 // TemporalNamespaceSpec defines the desired state of TemporalNamespace.
 // The Temporal namespace takes this object's metadata.name.
+// +kubebuilder:validation:XValidation:rule="self.backend != 'public-cloud' || !has(self.description)",message="description is not supported when backend is public-cloud"
 type TemporalNamespaceSpec struct {
+	// backend is where the namespace lives.
+	// private-cloud is the self-hosted Temporal server at --temporal-address. public-cloud is Temporal Cloud.
+	// It is fixed at creation, since Temporal can't move a namespace between servers.
+	// +kubebuilder:validation:Enum=private-cloud;public-cloud
+	// +kubebuilder:validation:XValidation:rule="self == oldSelf",message="backend can't be changed after creation"
+	// +kubebuilder:default=private-cloud
+	// +optional
+	Backend string `json:"backend,omitempty"`
+
 	// retention is how long Temporal keeps the history of closed workflows.
 	// Temporal requires one on every namespace.
 	// +required
 	Retention metav1.Duration `json:"retention"`
 
-	// description is shown in the Temporal UI.
+	// description is shown in the Temporal UI. Not supported on public-cloud,
+	// where the controller keeps its owner record in the description.
 	// +optional
 	Description string `json:"description,omitempty"`
+}
+
+// PublicCloudStatus is what workers need to reach a Temporal Cloud namespace.
+type PublicCloudStatus struct {
+	// namespace is the full Temporal Cloud namespace, name.account.
+	// +optional
+	Namespace string `json:"namespace,omitempty"`
+
+	// endpoint is the host:port workers connect to with their client certificate.
+	// +optional
+	Endpoint string `json:"endpoint,omitempty"`
 }
 
 // TemporalNamespaceStatus defines the observed state of TemporalNamespace.
@@ -23,6 +45,10 @@ type TemporalNamespaceStatus struct {
 	// observedGeneration is the spec generation the conditions describe.
 	// +optional
 	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
+
+	// publicCloud is set once a Temporal Cloud namespace exists.
+	// +optional
+	PublicCloud *PublicCloudStatus `json:"publicCloud,omitempty"`
 
 	// conditions holds Ready, which a Crossplane composition waits on.
 	// +listType=map
