@@ -3,10 +3,10 @@ module github.com/cujarrett/temporal-controller
 go 1.27.0
 
 require (
-	github.com/onsi/ginkgo/v2 v2.33.1
+	github.com/onsi/ginkgo/v2 v2.34.0
 	github.com/onsi/gomega v1.44.0
 	github.com/spiffe/go-spiffe/v2 v2.9.0
-	go.temporal.io/api v1.64.0
+	go.temporal.io/api v1.64.1
 	go.temporal.io/cloud-sdk v0.22.0
 	go.temporal.io/sdk v1.50.0
 	google.golang.org/grpc v1.85.0
