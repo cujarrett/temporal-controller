@@ -23,9 +23,7 @@ COPY . .
 # by leaving it empty we can ensure that the container and binary shipped on it will have the same platform.
 RUN CGO_ENABLED=0 GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH} go build -a -o manager cmd/main.go
 
-# Use distroless as minimal base image to package the manager binary
-# Refer to https://github.com/GoogleContainerTools/distroless for more details
-FROM gcr.io/distroless/static:nonroot@sha256:18f4cc26c9ffa7f20a359298be7deadac5c607c8e03a02b8119f1a5fc2f82c99
+FROM ghcr.io/cujarrett/base-go:static-debian13@sha256:c52fc98ed00a23a3301b396062feb4385e86dd64fa1a6549ffa39791b2317904
 WORKDIR /
 COPY --from=builder /workspace/manager .
 USER 65532:65532
