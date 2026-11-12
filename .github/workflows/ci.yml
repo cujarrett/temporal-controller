@@ -71,36 +71,20 @@ jobs:
         run: make test-e2e
 
   build-and-push:
-    runs-on: ubuntu-26.04-arm
     needs: [lint, test]
     if: github.ref == 'refs/heads/main'
     permissions:
       contents: read
       packages: write
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
-
-      - uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
-        with:
-          context: .
-          platforms: linux/arm64
-          sbom: true
-          push: true
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          tags: |
-            ghcr.io/cujarrett/temporal-controller:main
-            ghcr.io/cujarrett/temporal-controller:sha-${{ github.sha }}
+      id-token: write
+      attestations: write
+    uses: cujarrett/homelab/.github/workflows/build-image.yml@main
+    with:
+      image: ghcr.io/cujarrett/temporal-controller
+      tags: |
+        ghcr.io/cujarrett/temporal-controller:main
+        ghcr.io/cujarrett/temporal-controller:sha-${{ github.sha }}
+      cache-scope: temporal-controller
 
   deploy:
     runs-on: ubuntu-latest
