@@ -7,7 +7,7 @@ require (
 	github.com/onsi/gomega v1.44.0
 	github.com/spiffe/go-spiffe/v2 v2.9.0
 	go.temporal.io/api v1.64.1
-	go.temporal.io/cloud-sdk v0.22.0
+	go.temporal.io/cloud-sdk v0.23.0
 	go.temporal.io/sdk v1.50.0
 	google.golang.org/grpc v1.85.0
 	google.golang.org/protobuf v1.36.12
