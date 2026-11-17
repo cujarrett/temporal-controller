@@ -8,7 +8,7 @@ require (
 	github.com/spiffe/go-spiffe/v2 v2.9.0
 	go.temporal.io/api v1.64.3
 	go.temporal.io/cloud-sdk v0.23.0
-	go.temporal.io/sdk v1.50.0
+	go.temporal.io/sdk v1.51.0
 	google.golang.org/grpc v1.85.0
 	google.golang.org/protobuf v1.36.12
 	k8s.io/api v0.37.2
