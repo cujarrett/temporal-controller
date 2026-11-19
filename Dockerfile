@@ -23,7 +23,7 @@ COPY . .
 # by leaving it empty we can ensure that the container and binary shipped on it will have the same platform.
 RUN CGO_ENABLED=0 GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH} go build -a -o manager cmd/main.go
 
-FROM ghcr.io/cujarrett/base-distroless:static-debian13@sha256:f0505a0e3fdd29902098d6ef26b5dc5bd206841aa33441bb875b5ccdc117cfe0
+FROM ghcr.io/cujarrett/base-distroless:static-debian13@sha256:a359c6ce58f19d70594119fa4d2233f0d27d93bce787328a4936fd1f995cc779
 WORKDIR /
 COPY --from=builder /workspace/manager .
 USER 65532:65532
